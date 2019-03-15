@@ -1,20 +1,17 @@
-import UserPreferences as UP
-import RoomContents as RC
-import Prefoperations as PO
+import PrefWeights.Prefoperations as po
+import RoomSearch.SelectRooms as rs
 
 class PreferenceTests:
+    @staticmethod
     def weightingTest():
-        roomItems = ["projector", "table", "chair", "whiteboard"]
-        userPrefs = [UP.Preference("projector", 0.6) , UP.Preference("table", 0.3), UP.Preference("chair", 0.9), UP.Preference("whiteboard", -0.5)]
-        room = RC.Room(roomItems)
-        
-        weighting = PO.PrefOps.calculateWeighting(room, userPrefs)
-
-        assert weighting == 1.3
+        users = [rs.fetchUser("1234567")]
+        rooms = rs.fetchRooms()
+        weighted_rooms = po.calculateWeighting(users, rooms)
+        print(weighted_rooms)
 
 
 def main():
-    PreferenceTests.weightingTest();
+    PreferenceTests.weightingTest()
 
 
 if __name__ == "__main__" : main()

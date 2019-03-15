@@ -1,17 +1,19 @@
-import RoomContents as rooms
-import UserPreferences as usrprf
 
 
-class PrefOps:
-    def calculateWeighting(room, userPrefs):
-        totalWeighting = 0
-        for pref in userPrefs:
-            if room.checkItem(pref.getName()):
-                totalWeighting = round(totalWeighting + pref.getValue() * 1, 2)
-            else:
-                totalWeighting = round(totalWeighting + pref.getValue() * -1, 2)
-            
-        return totalWeighting
+def calculateWeighting(users_in_group, rooms):
+    weighted_rooms = []
+    for room in rooms:
+        temp_weight = 0
+        for user in users_in_group:
+            for prefKey in user['preferences']:
+                if prefKey in room['equipment']:
+                    temp_weight += user['preferences'][prefKey]
+                else:
+                    temp_weight -= user['preferences'][prefKey]
+        weighted_rooms.append([room['roomId'], temp_weight])
+        
+
+    return weighted_rooms
 
 
 
