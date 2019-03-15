@@ -10,7 +10,7 @@ def calculateWeighting(users_in_group, rooms):
                     temp_weight += user['preferences'][prefKey]
                 else:
                     temp_weight -= user['preferences'][prefKey]
-        weighted_rooms.append([room['roomId'], temp_weight])
+        weighted_rooms.append([room, temp_weight])
         
 
     return weighted_rooms

@@ -8,13 +8,13 @@ def calculate_average_distance(destination, team_locations):
     # Approx radius of earth
     R = 6373.0
     
-    end_lat = radians(destination.getLat())
-    end_long = radians(destination.getLong())
-    i = 0;
+    end_lat = radians(destination["latitude"])
+    end_long = radians(destination["longitude"])
+    i = 0
     for location in team_locations:
         # Long and Lat given by app are in degrees, therefore convert to radians
-        start_long = radians(location.getLong())
-        start_lat = radians(location.getLat())
+        start_long = radians(location["longitude"])
+        start_lat = radians(location["latitude"])
 
         dlon = end_long - start_long
         dlat = end_lat - start_lat

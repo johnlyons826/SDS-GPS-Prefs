@@ -1,5 +1,6 @@
 import requests as rq
 import PrefWeights.Prefoperations as po
+import GPSOperations.GPSOperations as gps
 
 
 def fetchRooms():
@@ -31,8 +32,19 @@ def pickRooms(userIDs):
         userInfo.append(fetchUser(user))
 
     weighted_rooms = po.calculateWeighting(userInfo, rooms)
+
+    userLocations = []
+    for user in userInfo:
+        userLocations.append(user["locations"][0])
+
+    for room in weighted_rooms:
+        location = room[0]["location"]
+        average_distance = gps.calculate_average_distance(location, userLocations)
+        dist_weight = 1 / average_distance * 1000
+        room[1] -=  dist_weight
+    
     best_room = evalRooms(weighted_rooms)
-    return best_room
+    return best_room["roomId"]
 
         
 

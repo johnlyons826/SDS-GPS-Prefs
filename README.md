@@ -10,9 +10,7 @@ Deals with creating a weight value for a room given its contents and that of a u
 # TO DO:
 - Primary and secondary priorities for users.
   - e.g. group leader has greater weight on some settings etc.
-- Integrate distance weighting onto the end of preference weighting.
-  - use exponential function to punish further distances?
-- Experiment on actual user data (gained from James and Sam's GPS app parser).
+- use exponential function to punish further distances?
 - Implement the preference weight bumps after a successful booking.
   - May need to mock up said "successful booking".
 - Check Python's rounding/floating points to improve GPS reading accuracy.
