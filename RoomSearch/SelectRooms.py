@@ -1,6 +1,11 @@
 import requests as rq
 import PrefWeights.Prefoperations as po
 import GPSOperations.GPSOperations as gps
+from datetime import date as d
+from datetime import time as t
+from datetime import datetime as dt
+import datetime as DT
+import re
 
 
 def fetchRooms():
@@ -24,7 +29,7 @@ def evalRooms(weighted_rooms):
 
     return bestRoomID
 
-def pickRooms(userIDs):
+def pickRooms(userIDs, bookingTime):
 
     rooms = fetchRooms()
     userInfo = []
@@ -35,7 +40,19 @@ def pickRooms(userIDs):
 
     userLocations = []
     for user in userInfo:
-        userLocations.append(user["locations"][0])
+        bestTimeDiff = DT.timedelta(5000,50000,500000)
+        bestLoc = user["locations"][0]
+        for location in user["locations"]:
+            timeStr = location["time"]
+            timeStr = timeStr[:-5]
+            time = dt.strptime(timeStr, "%Y-%m-%dT%H:%M:%S")
+            diff_to_booking = bookingTime - time
+            if abs(diff_to_booking) < bestTimeDiff:
+                bestTimeDiff = diff_to_booking
+                bestLoc = location
+        userLocations.append(bestLoc)
+
+
 
     for room in weighted_rooms:
         location = room[0]["location"]
