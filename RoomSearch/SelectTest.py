@@ -14,7 +14,7 @@ class RoomSelectionTests:
         bookingTime = dt.combine(date, time)
         bestRoom = sr.pickRooms(userIds, bookingTime)
         
-        assert(bestRoom == "CS-225")
+        assert(bestRoom == "LIBRARY-148")
 
 
 

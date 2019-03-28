@@ -1,5 +1,22 @@
 from math import sin, cos, sqrt, atan2, radians
 
+def calculateDistance(start_location, end_location):
+    R = 6373.0
+    end_lat = radians(end_location["latitude"])
+    end_long = radians(end_location["longitude"])
+
+    start_long = radians(start_location["longitude"])
+    start_lat = radians(start_location["latitude"])
+
+    dlon = end_long - start_long
+    dlat = end_lat - start_lat
+
+    a = sin(dlat / 2)**2 + cos(start_lat) * cos(end_lat) * sin(dlon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    distance = R * c
+    return distance
+
 
 
 def calculate_average_distance(destination, team_locations):

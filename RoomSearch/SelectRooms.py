@@ -27,7 +27,29 @@ def evalRooms(weighted_rooms):
             bestWeight = rooms[1]
             bestRoomID = rooms[0]
 
+
+
     return bestRoomID
+
+def createClusters(locations):
+    clusters = []
+    for point1 in locations:
+        point1Neighbours = [point1]
+        for point2 in locations:
+            if point1 != point2:
+                dist = gps.calculateDistance(point1, point2)
+                if dist < 0.5:
+                    point1Neighbours.append(point2)
+                
+        clusters.append(point1Neighbours)
+    biggestCluster = []
+    for cluster in clusters:
+        if len(cluster) > len(biggestCluster):
+            biggestCluster = cluster
+    return biggestCluster
+                    
+
+
 
 def pickRooms(userIDs, bookingTime):
 
@@ -52,6 +74,10 @@ def pickRooms(userIDs, bookingTime):
                 bestLoc = location
         userLocations.append(bestLoc)
 
+    #clustering algorithm goes here
+    biggestCluster = createClusters(userLocations)
+    if len(biggestCluster) > 1:
+        userLocations = biggestCluster
 
 
     for room in weighted_rooms:
@@ -61,6 +87,37 @@ def pickRooms(userIDs, bookingTime):
         room[1] -=  dist_weight
     
     best_room = evalRooms(weighted_rooms)
+
+    prefs_to_bump = []
+    for equipment in best_room['equipment']:
+        prefs_to_bump.append(equipment)
+
+    preferences = userInfo[0]['preferences']
+    user_prefs = []
+    for pref in preferences:
+        user_prefs.append([pref, preferences[pref]])
+
+    first = True
+    pref_json = "{"
+    for (pref,score) in user_prefs:
+        if pref in prefs_to_bump:
+            score += 0.05
+            if score > 1:
+                score = 1.0
+            if first:
+                pref_json += "\n\t\"" + pref + "\": " + str(score)
+            else:
+                pref_json += ",\n\t\"" + pref + "\": " + str(score)
+    pref_json += "\n}"
+    print(pref_json)
+
+    test_pref = "{\n\t\"TV\": 0.641,\n\t\"PROJECTOR\": 0.341\n}"
+    print(test_pref)
+ 
+
+    #rq.put("http://sds.samchatfield.com/api/user/" + userIDs[0] + "/preferences", test_pref)
+    #rq.put("http://sds.samchatfield.com/api/user/" + userIDs[0] + "/preferences", pref_json)
+
     return best_room["roomId"]
 
         
