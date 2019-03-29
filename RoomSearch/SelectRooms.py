@@ -38,7 +38,7 @@ def createClusters(locations):
         for point2 in locations:
             if point1 != point2:
                 dist = gps.calculateDistance(point1, point2)
-                if dist < 0.5:
+                if dist < 0.25:
                     point1Neighbours.append(point2)
                 
         clusters.append(point1Neighbours)
@@ -48,46 +48,7 @@ def createClusters(locations):
             biggestCluster = cluster
     return biggestCluster
                     
-
-
-
-def pickRooms(userIDs, bookingTime):
-
-    rooms = fetchRooms()
-    userInfo = []
-    for user in userIDs:
-        userInfo.append(fetchUser(user))
-
-    weighted_rooms = po.calculateWeighting(userInfo, rooms)
-
-    userLocations = []
-    for user in userInfo:
-        bestTimeDiff = DT.timedelta(5000,50000,500000)
-        bestLoc = user["locations"][0]
-        for location in user["locations"]:
-            timeStr = location["time"]
-            timeStr = timeStr[:-5]
-            time = dt.strptime(timeStr, "%Y-%m-%dT%H:%M:%S")
-            diff_to_booking = bookingTime - time
-            if abs(diff_to_booking) < bestTimeDiff:
-                bestTimeDiff = diff_to_booking
-                bestLoc = location
-        userLocations.append(bestLoc)
-
-    #clustering algorithm goes here
-    biggestCluster = createClusters(userLocations)
-    if len(biggestCluster) > 1:
-        userLocations = biggestCluster
-
-
-    for room in weighted_rooms:
-        location = room[0]["location"]
-        average_distance = gps.calculate_average_distance(location, userLocations)
-        dist_weight = 1 / average_distance * 1000
-        room[1] -=  dist_weight
-    
-    best_room = evalRooms(weighted_rooms)
-
+def bumpPrefs(best_room, userInfo):
     prefs_to_bump = []
     for equipment in best_room['equipment']:
         prefs_to_bump.append(equipment)
@@ -97,28 +58,75 @@ def pickRooms(userIDs, bookingTime):
     for pref in preferences:
         user_prefs.append([pref, preferences[pref]])
 
-    first = True
-    pref_json = "{"
+
     for (pref,score) in user_prefs:
         if pref in prefs_to_bump:
             score += 0.05
             if score > 1:
                 score = 1.0
-            if first:
-                pref_json += "\n\t\"" + pref + "\": " + str(score)
-            else:
-                pref_json += ",\n\t\"" + pref + "\": " + str(score)
-    pref_json += "\n}"
-    print(pref_json)
+    return user_prefs
 
-    test_pref = "{\n\t\"TV\": 0.641,\n\t\"PROJECTOR\": 0.341\n}"
-    print(test_pref)
- 
+def pickRooms(userIDs, bookingTime):
 
-    #rq.put("http://sds.samchatfield.com/api/user/" + userIDs[0] + "/preferences", test_pref)
-    #rq.put("http://sds.samchatfield.com/api/user/" + userIDs[0] + "/preferences", pref_json)
+    rooms = fetchRooms()
+    userInfo = []
+    for user in userIDs:
+        userInfo.append(fetchUser(user))
 
-    return best_room["roomId"]
+    weighted_rooms = po.calculateWeighting(userInfo, rooms, bookingTime)
+
+    userLocations = []
+    for user in userInfo:
+        if user['locations'] != []:
+        
+            bestTimeDiff = 9999999.0
+            bestLoc = user["locations"][0]
+            for location in user["locations"]:
+                timeStr = location["time"]
+                timeStr = timeStr[:-5]
+                time = dt.strptime(timeStr, "%Y-%m-%dT%H:%M:%S")
+
+                user_weekday = time.weekday()
+                booking_weekday = bookingTime.weekday()
+                user_hour = time.hour
+                booking_hour = bookingTime.hour
+                day_diff = abs(user_weekday - booking_weekday)
+                hour_diff = abs(user_hour - booking_hour)
+                diff_to_booking = day_diff + 1/24 * hour_diff
+                if abs(diff_to_booking) < bestTimeDiff:
+                    bestTimeDiff = diff_to_booking
+                    bestLoc = location
+            userLocations.append(bestLoc)
+
+    biggestCluster = createClusters(userLocations)
+    if len(biggestCluster) > 1:
+        userLocations = biggestCluster
+
+
+    for room in weighted_rooms:
+        location = room[0]["location"]
+        average_distance = gps.calculate_average_distance(location, userLocations)
+        dist_weight = 1 / average_distance * 1000
+        room[1] +=  dist_weight
+    
+    #best_room = evalRooms(weighted_rooms)
+    best_rooms = sorted(weighted_rooms, key=lambda x: x[1], reverse=True)
+    cur_num = 0
+    results= []
+
+    for i in range (0,3):
+        if i >= len(best_rooms):
+            break
+        temp_dict = {}
+        temp_dict["roomId"] =  best_rooms[i][0]["roomId"]
+        temp_dict["Score"] = best_rooms[i][1]
+        results.append(temp_dict)
+
+    #bumped = bumpPrefs(best_room, userInfo)
+    
+
+  
+    return results
 
         
 

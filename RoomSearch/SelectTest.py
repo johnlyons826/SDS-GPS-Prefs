@@ -7,17 +7,19 @@ class RoomSelectionTests:
 
 
     @staticmethod
-    def individualTest():
+    def individualTest1():
         userIds = ["1234567"]
-        date = d(2019, 3, 16)
-        time = t(12,0,0,0)
+        date = d(2019, 3, 21)
+        time = t(22,0,0,0)
         bookingTime = dt.combine(date, time)
         bestRoom = sr.pickRooms(userIds, bookingTime)
-        
-        assert(bestRoom == "LIBRARY-148")
 
-
-
+    def individualTest2():
+        userIds = ["1234567"]
+        date = d(2019, 4, 21)
+        time = t(10,0,0,0)
+        bookingTime = dt.combine(date, time)
+        bestRoom = sr.pickRooms(userIds, bookingTime)
 
 def main():
     RoomSelectionTests.individualTest()
